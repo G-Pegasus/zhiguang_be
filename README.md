@@ -1,9 +1,17 @@
 # 项目详细文档购买：
-**搜小红书：程序员流年**
+**小红书搜：程序员流年**
 
-https://www.xiaohongshu.com/goods-detail/691f20586ea74e00019b3a3d
+**项目说明：开源代码中缺少配置文件，购买后获得全部代码**
 
-| <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/11a8438f.png"> | <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/4035ca79.png"> | <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/40b80f25.png"> |
+商品详情：https://www.xiaohongshu.com/goods-detail/691f20586ea74e00019b3a3d
+
+# 文档示例
+<div style="display: flex; gap: 10px;">
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/11a8438f.png" width="250" />
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/4035ca79.png" width="250" />
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/40b80f25.png" width="250" />
+</div>
+
 ![文档1](http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/43eb8fe1.png)
 ![文档2](http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/42b24575.png)
 
@@ -12,9 +20,9 @@ https://www.xiaohongshu.com/goods-detail/691f20586ea74e00019b3a3d
 - **后端地址**：https://github.com/G-Pegasus/zhiguang_be
 - **前端地址**：https://github.com/G-Pegasus/zhiguang_fe
 - **项目概述**：知识社区 APP（后续考虑支持付费），支持发布知识、点赞/收藏、关注取关、首页 Feed 展示与对象存储直传，AI 生成摘要等等。项目各模块进行了充分详细的设计以满足高并发和高可用需求
-- **技术栈**：后端 Java 21 + Spring Boot + Spring Security + Spring AI + MyBatis + MySQL + Redis + Kafka + Caffeine + 阿里云 OSS + Canal + （后续接入 Elasticsearch，AI RAG 问答）前端 React + Vite
+- **技术栈**：后端 Java 21 + Spring Boot + Spring Security + Spring AI + RAG + MyBatis + MySQL + Redis + Kafka + Caffeine + 阿里云 OSS + Canal + Elasticsearch ；前端 React + Vite
 - **项目细节与亮点**：
-    - **认证系统**：短信验证码进行登录与注册、密码策略、双令牌模式、无状态会话。认证双令牌模式
+    - **认证系统**：开发基于 Spring Security 的 JWT 双令牌认证系统，采用 RS256 签名 + Redis 刷新令牌白名单，实现 15 分钟访问令牌 + 7 天刷新令牌的安全会话管理，支持即时令牌撤销，兼顾高安全与高性能。
     - **计数系统**：笔记维度(点赞收藏)与用户维度(关注取关) 以 Redis 作为底层存储系统，采用定制化 Redis SDS 二进制紧凑计数，使用 Lua 脚本进行原子更新，并实现了采样一致性校验与自愈重建。定制化 Redis SDS
     - **发布系统**：采用渐进式发布流程，发布的图片、视频，Markdown 文档等都存入 OSS 对象存储系统，采用后端发布预签名+前端直传的形式上传，节省前后端传输资源渐进式发布流程。并接入 DeepSeek AI 一键生成文章摘要。
     - **用户关系系统**：实现关注功能，采用一主多从+事件驱动模型。粉丝表，计数系统，列表缓存都作为关注表的伪从。关注事件发生时，在同一事务中插入关注表和 Outbox 表，使用 Canal 订阅 Outbox 表的 binlog，并将变更事件发布到 Kafka 异步更新其他数据源。Outbox 模式

@@ -7,11 +7,11 @@ import org.apache.ibatis.annotations.MapKey;
 import java.util.List;
 import java.util.Map;
 
-@Mapper
 /**
  * 关系表数据访问层。
  * 职责：维护关注/粉丝关系的插入与逻辑取消，分页读取与行数据回填，统计有效关系计数。
  */
+@Mapper
 public interface RelationMapper {
     /**
      * 插入关注关系。
