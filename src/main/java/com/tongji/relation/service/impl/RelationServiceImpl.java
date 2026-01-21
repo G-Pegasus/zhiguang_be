@@ -47,6 +47,9 @@ public class RelationServiceImpl implements RelationService {
     private final Cache<Long, List<Long>> flwsTopCache;
     private final Cache<Long, List<Long>> fansTopCache;
     private final UserMapper userMapper;
+
+    private static final int IDX_FOLLOWER = 2; // (2 - 1) * 4, 下标从 4 开始
+    private static final int IDX_FOLLOWING = 1; // 下标从 0 开始
     
 
     /**
@@ -273,12 +276,12 @@ public class RelationServiceImpl implements RelationService {
      * @param userId 用户ID
      * @return 是否为大V
      */
-    private boolean isBigV(long userId) {
+    private boolean isBigV(long userId, int idx) {
         byte[] raw = redis.execute((RedisCallback<byte[]>) c -> c.stringCommands().get(("ucnt:" + userId).getBytes(StandardCharsets.UTF_8)));
         if (raw == null || raw.length < 20) return false;
         long n = 0;
-        int off = 2 * 4;
-        for (int i = 0; i < 4; i++) n = (n << 8) | (raw[off + i] & 0xFFL);
+        int off = (idx - 1) * 4;
+        for (int i = 0; i < 4; i++) n = (n << 8) | (raw[off + i] & 0xFFL); // &0xFFL 确保每一部分都被当作无符号数处理
         return n >= 500_000L;
     }
 
@@ -313,7 +316,12 @@ public class RelationServiceImpl implements RelationService {
             fillZSet(key, rows, idField, tsField, null);
             redis.expire(key, Duration.ofHours(2));
 
-            if (localCache != null && isBigV(userId)) {
+            int idx = switch (idField){
+                case "fromUserId" -> IDX_FOLLOWER;
+                case "toUserId" -> IDX_FOLLOWING;
+                default -> 2; // 给个默认值
+            };
+            if (localCache != null && isBigV(userId, idx)) {
                 maybeUpdateTopCache(userId, key, localCache);
             }
 
