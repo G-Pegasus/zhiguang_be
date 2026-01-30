@@ -26,6 +26,9 @@ public class CacheProperties {
 
         // 个人信息流缓存配置。
         private MineCfg mineCfg = new MineCfg();
+
+        // 知文详情缓存配置
+        private DetailCfg detailCfg = new DetailCfg();
     }
 
     @Data
@@ -44,6 +47,15 @@ public class CacheProperties {
 
         // 最大条目数：超过后按 Caffeine 策略逐出。
         private long maxSize = 1000;
+    }
+
+    @Data
+    public static class DetailCfg {
+        // TTL（秒）：写入后在本地缓存中保留的时长。
+        private int ttlSeconds = 30;
+
+        // 最大条目数：超过后按 Caffeine 策略逐出。
+        private long maxSize = 5000;
     }
 
     @Data

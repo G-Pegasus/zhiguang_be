@@ -3,6 +3,7 @@ package com.tongji.cache.config;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.tongji.knowpost.api.dto.FeedPageResponse;
+import com.tongji.knowpost.api.dto.KnowPostDetailResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,6 +39,19 @@ public class CacheConfig {
         return Caffeine.newBuilder()
                 .maximumSize(props.getL2().getMineCfg().getMaxSize())
                 .expireAfterWrite(Duration.ofSeconds(props.getL2().getMineCfg().getTtlSeconds()))
+                .build();
+    }
+
+    /**
+     * 知文详情本地缓存。
+     *
+     * <p>键为 knowpost:detail:{id}:v{version}，值为 {@link KnowPostDetailResponse}。</p>
+     */
+    @Bean("knowPostDetailCache")
+    public Cache<String, KnowPostDetailResponse> knowPostDetailCache(CacheProperties props) {
+        return Caffeine.newBuilder()
+                .maximumSize(props.getL2().getDetailCfg().getMaxSize())
+                .expireAfterWrite(Duration.ofSeconds(props.getL2().getDetailCfg().getTtlSeconds()))
                 .build();
     }
 }
