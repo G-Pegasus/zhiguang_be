@@ -87,7 +87,7 @@ public class RelationServiceImpl implements RelationService {
     public boolean follow(long fromUserId, long toUserId) {
         // Lua 脚本令牌桶限流
         Long ok = redis.execute(tokenScript, List.of("rl:follow:" + fromUserId), "100", "1");
-        if (ok == null || ok == 0L) {
+        if (ok == 0L) {
             return false;
         }
 

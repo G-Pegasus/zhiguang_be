@@ -11,8 +11,11 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 用户维度计数服务实现。
@@ -96,12 +99,18 @@ public class UserCounterServiceImpl implements UserCounterService {
 
         long posts;
         List<Long> ids = knowPostMapper.listMyPublishedIds(userId);
-        if (ids != null && !ids.isEmpty()) {
-            posts = ids.size();
+        // 将 ids 转换成字符串类型的 List
+        List<String> idStr = ids.stream()
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+
+        if (!idStr.isEmpty()) {
+            posts = idStr.size();
             long likeSum = 0L;
             long favSum = 0L;
-            for (Long id : ids) { // 聚合作者全部知文的获赞/获收藏总数
-                Map<String, Long> v = counterService.getCounts("knowpost", String.valueOf(id), List.of("like", "fav"));
+            Map<String, Map<String, Long>> counts = counterService.getCountsBatch("knowpost", idStr, List.of("like", "fav"));
+            for (String id : idStr) { // 聚合作者全部知文的获赞/获收藏总数
+                Map<String, Long> v = counts.get(id);
                 likeSum += v.getOrDefault("like", 0L);
                 favSum += v.getOrDefault("fav", 0L);
             }

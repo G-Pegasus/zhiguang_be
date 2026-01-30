@@ -6,6 +6,7 @@ import com.tongji.counter.schema.BitmapShard;
 import com.tongji.counter.service.CounterService;
 import com.tongji.counter.event.CounterEvent;
 import com.tongji.counter.event.CounterEventProducer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
  * - 读取汇总计数（SDS），异常时基于位图分片重建；
  * - 批量读取优化与“是否点赞/收藏”判定。
  */
+@Slf4j
 @Service
 public class CounterServiceImpl implements CounterService {
 
@@ -143,6 +145,7 @@ public class CounterServiceImpl implements CounterService {
         Map<String, Long> result = new LinkedHashMap<>();
 
         if (needRebuild) {
+            log.info("计数结构不存在，需要重建");
             // 限流与指数退避：避免在热点实体上触发重建风暴
             if (inBackoff(entityType, entityId)) {
                 for (String m : metrics) {
@@ -211,7 +214,10 @@ public class CounterServiceImpl implements CounterService {
         } else {
             for (String m : metrics) {
                 Integer idx = CounterSchema.NAME_TO_IDX.get(m);
-                if (idx == null) continue;
+                if (idx == null) {
+                    continue;
+                }
+
                 int off = idx * CounterSchema.FIELD_SIZE;
                 long val = readInt32BE(raw, off); // 大端读取单段 32 位值
                 result.put(m, val);
@@ -379,7 +385,6 @@ public class CounterServiceImpl implements CounterService {
         RRateLimiter limiter = redisson.getRateLimiter(rlKey);
 
         // 初始化速率（如已存在则忽略）
-        limiter.trySetRate(RateType.OVERALL, ratePermits, Duration.ofSeconds(rateWindowSeconds));
         limiter.trySetRate(RateType.OVERALL, ratePermits, Duration.ofSeconds(rateWindowSeconds));
 
         return limiter.tryAcquire(1);
