@@ -10,12 +10,12 @@
 
 # 项目前端页面展示
 <div style="display: flex; gap: 10px;">
-  <img src="https://free.picui.cn/free/2026/03/29/69c8db2c32d74.png" width="500" />
-  <img src="https://free.picui.cn/free/2026/03/29/69c8db2ead009.png" width="500" />
-  <img src="https://free.picui.cn/free/2026/03/29/69c8db2b93e32.png" width="500" />
-  <img src="https://free.picui.cn/free/2026/03/29/69c8db2b89818.png" width="500" />
-  <img src="https://free.picui.cn/free/2026/03/29/69c8db2bd181e.png" width="500" />
-  <img src="https://free.picui.cn/free/2026/03/29/69c8db2c30a4b.png" width="500" />
+  <img src="https://free.picui.cn/free/2026/03/29/69c8db2c32d74.png" width="800" />
+  <img src="https://free.picui.cn/free/2026/03/29/69c8db2ead009.png" width="800" />
+  <img src="https://free.picui.cn/free/2026/03/29/69c8db2b93e32.png" width="800" />
+  <img src="https://free.picui.cn/free/2026/03/29/69c8db2b89818.png" width="800" />
+  <img src="https://free.picui.cn/free/2026/03/29/69c8db2bd181e.png" width="800" />
+  <img src="https://free.picui.cn/free/2026/03/29/69c8db2c30a4b.png" width="800" />
 </div>
 
 # 知光平台-知识获取与分享社区
