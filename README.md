@@ -1,3 +1,9 @@
+# 项目文档
+## 要求
+
+- **JDK**: Java 21 (LTS)
+- **Maven**: 3.9.x 或更高（推荐使用仓库中的 Maven Wrapper）
+
 # 知光平台-知识获取与分享社区
 后端 & 前端开发（前端采用 AI 辅助开发）
 - **后端地址**：https://github.com/G-Pegasus/zhiguang_be
