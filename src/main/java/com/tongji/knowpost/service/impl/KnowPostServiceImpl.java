@@ -11,6 +11,7 @@ import com.tongji.knowpost.id.SnowflakeIdGenerator;
 import com.tongji.knowpost.mapper.KnowPostMapper;
 import com.tongji.knowpost.model.KnowPost;
 import com.tongji.knowpost.model.KnowPostDetailRow;
+import com.tongji.knowpost.api.dto.FeedPageResponse;
 import com.tongji.knowpost.api.dto.KnowPostDetailResponse;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.tongji.counter.service.CounterService;
@@ -31,6 +32,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -45,6 +47,8 @@ public class KnowPostServiceImpl implements KnowPostService {
     private final CounterService counterService;
     private final UserCounterService userCounterService;
     private final StringRedisTemplate redis;
+    @Qualifier("feedPublicCache")
+    private final Cache<String, FeedPageResponse> feedPublicCache;
     @Qualifier("knowPostDetailCache")
     private final Cache<String, KnowPostDetailResponse> knowPostDetailCache;
     private final HotKeyDetector hotKey;
@@ -63,6 +67,7 @@ public class KnowPostServiceImpl implements KnowPostService {
             CounterService counterService,
             UserCounterService userCounterService,
             StringRedisTemplate redis,
+            @Qualifier("feedPublicCache") Cache<String, FeedPageResponse> feedPublicCache,
             @Qualifier("knowPostDetailCache") Cache<String, KnowPostDetailResponse> knowPostDetailCache,
             HotKeyDetector hotKey,
             RagIndexService ragIndexService,
@@ -75,6 +80,7 @@ public class KnowPostServiceImpl implements KnowPostService {
         this.counterService = counterService;
         this.userCounterService = userCounterService;
         this.redis = redis;
+        this.feedPublicCache = feedPublicCache;
         this.knowPostDetailCache = knowPostDetailCache; // 带@Qualifier的参数赋值
         this.hotKey = hotKey;
         this.ragIndexService = ragIndexService;
@@ -558,9 +564,45 @@ public class KnowPostServiceImpl implements KnowPostService {
     private void invalidateCache(long id) {
         String pageKey = "knowpost:detail:" + id + ":v" + DETAIL_LAYOUT_VER;
 
-        redis.delete(pageKey);
+        try {
+            redis.delete(pageKey);
+        } catch (Exception e) {
+            log.warn("Redis 详情缓存删除失败，key={}", pageKey, e);
+        }
 
-        knowPostDetailCache.invalidate(pageKey);
+        try {
+            knowPostDetailCache.invalidate(pageKey);
+        } catch (Exception e) {
+            log.warn("本地详情缓存删除失败，key={}", pageKey, e);
+        }
+
+        try {
+            invalidateFeedLocalCache(id);
+        } catch (Exception e) {
+            log.warn("Feed 本地缓存清理失败，id={}，将依赖 TTL 自动过期", id, e);
+        }
+    }
+
+    private void invalidateFeedLocalCache(long id) {
+        long hourSlot = System.currentTimeMillis() / 3600000L;
+        for (long slot : List.of(hourSlot, hourSlot - 1)) {
+            String indexKey = "feed:public:index:" + id + ":" + slot;
+            try {
+                Set<String> pageKeys = redis.opsForSet().members(indexKey);
+                if (pageKeys == null || pageKeys.isEmpty()) {
+                    continue;
+                }
+                for (String localPageKey : pageKeys) {
+                    if (localPageKey == null || localPageKey.isBlank()) {
+                        continue;
+                    }
+                    feedPublicCache.invalidate(localPageKey);
+                    redis.opsForSet().remove(indexKey, localPageKey);
+                }
+            } catch (Exception e) {
+                log.warn("Feed 缓存清理异常，indexKey={}", indexKey, e);
+            }
+        }
     }
 
     private List<String> parseStringArray(String json) {
