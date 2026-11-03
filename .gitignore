@@ -44,6 +44,10 @@ build/
 src/main/resources/keys/
 *.pem
 
+### 本地开发配置 ###
+# 只提交 application-local.yml.example，真实值留在各自机器上
+src/main/resources/application-local.yml
+
 ### 运行产物 ###
 # 后端日志里有验证码明文（LoggingCodeSender 只打日志不发送），绝不能提交
 *.log
