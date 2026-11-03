@@ -37,3 +37,14 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### 密钥 ###
+# JWT 签名密钥不进仓库。历史提交里已有一份且远端是公开的，
+# 清理方式见 DEPLOY_UBUNTU.md 第 4 节（必须轮换，光删文件没用）。
+src/main/resources/keys/
+*.pem
+
+### 运行产物 ###
+# 后端日志里有验证码明文（LoggingCodeSender 只打日志不发送），绝不能提交
+*.log
+.idea/claudeCodeTabState.xml

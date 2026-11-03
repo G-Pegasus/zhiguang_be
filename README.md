@@ -4,6 +4,15 @@
 - **JDK**: Java 21 (LTS)
 - **Maven**: 3.9.x 或更高（推荐使用仓库中的 Maven Wrapper）
 
+<div style="display: flex; gap: 10px;">
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/11a8438f.png" width="250" />
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/4035ca79.png" width="250" />
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/40b80f25.png" width="250" />
+</div>
+
+![文档1](http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/43eb8fe1.png)
+![文档2](http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/42b24575.png)
+
 # 知光平台-知识获取与分享社区
 后端 & 前端开发（前端采用 AI 辅助开发）
 - **后端地址**：https://github.com/G-Pegasus/zhiguang_be

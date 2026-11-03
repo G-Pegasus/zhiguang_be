@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,6 +63,14 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("code", ErrorCode.BAD_REQUEST.getCode());
         body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", ErrorCode.BAD_REQUEST.getCode());
+        body.put("message", "上传文件不能超过10MB");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
