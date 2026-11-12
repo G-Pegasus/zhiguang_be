@@ -23,7 +23,7 @@ public class RelationEventProcessor {
         this.userCounterService = userCounterService;
     }
 
-    /**
+        /**
      * 处理关系事件：入库、更新缓存、刷新计数，并进行幂等去重。
      * @param evt 关系事件
      */
