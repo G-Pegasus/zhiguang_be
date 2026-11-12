@@ -28,9 +28,12 @@ if delta == 0 then
     return 0
 end
 
+-- 总计数缺失说明快照尚未由位图事实重建：读路径正是以“缺失/长度异常”作为重建触发条件。
+-- 这里不能写零值快照占位，否则长度校验会通过、重建被永久跳过，历史计数静默丢失。
+-- 保留增量，等读路径重建出快照后由下一轮刷写叠加（重建会清理已折叠的字段）。
 local cnt = redis.call('GET', cntKey)
 if not cnt then
-    cnt = string.rep(string.char(0), schemaLen * fieldSize)
+    return 0
 elseif string.len(cnt) ~= schemaLen * fieldSize then
     return redis.error_reply('Invalid counter length')
 end

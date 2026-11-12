@@ -89,11 +89,27 @@ class CounterAggregationRedisTest {
     }
 
     @Test
-    void initializesMissingCounterAndAutomaticallyRemovesEmptyHash() {
+    void doesNotCreateZeroSnapshotWhenCounterMissing() {
         redis.opsForHash().put(aggKey, "1", "7");
-        assertThat(flushField("1")).isEqualTo(7L);
-        assertThat(readRaw()).isEqualTo(counters(0, 7, 0, 0, 0));
-        assertThat(redis.hasKey(aggKey)).isFalse();
+
+        assertThat(flushField("1")).isZero();
+        // 缺失是读路径触发位图重建的信号；写零值快照会让重建被永久跳过
+        assertThat(redis.hasKey(cntKey)).isFalse();
+        // 增量保留在桶内，等重建出快照后再折叠，不能丢
+        assertThat(redis.opsForHash().get(aggKey, "1")).isEqualTo("7");
+    }
+
+    @Test
+    void rebuildClearsRetainedIncrementSoLaterFlushDoesNotDoubleCount() {
+        redis.opsForHash().put(aggKey, "1", "7");
+        assertThat(flushField("1")).isZero();
+
+        // 读路径重建：写回位图真值（已包含这 7 个事实），并清理已折叠字段
+        writeRaw(counters(0, 100, 0, 0, 0));
+        redis.opsForHash().delete(aggKey, "1");
+
+        assertThat(flushField("1")).isZero();
+        assertThat(readCount(1)).isEqualTo(100L);
     }
 
     @Test
@@ -116,6 +132,7 @@ class CounterAggregationRedisTest {
 
     @Test
     void preservesIncrementArrivingAfterCompletedFlush() {
+        writeRaw(counters(0, 0, 0, 0, 0));
         redis.opsForHash().increment(aggKey, "1", 10L);
         flushField("1");
         redis.opsForHash().increment(aggKey, "1", 3L);
@@ -183,6 +200,7 @@ class CounterAggregationRedisTest {
 
     @Test
     void concurrentFlushesConsumeTheSameDeltaOnlyOnce() throws Exception {
+        writeRaw(counters(0, 0, 0, 0, 0));
         redis.opsForHash().put(aggKey, "1", "10");
         var executor = Executors.newFixedThreadPool(8);
         var start = new CountDownLatch(1);
@@ -208,6 +226,7 @@ class CounterAggregationRedisTest {
 
     @Test
     void concurrentWritersAndConsumerInstancesPreserveAllIncrements() throws Exception {
+        writeRaw(counters(0, 0, 0, 0, 0));
         var executor = Executors.newFixedThreadPool(4);
         var start = new CountDownLatch(1);
         try {
