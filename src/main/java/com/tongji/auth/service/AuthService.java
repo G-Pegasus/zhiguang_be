@@ -91,12 +91,14 @@ public class AuthService {
     /**
      * 注册用户并签发令牌。
      * <p>
-     * 验证标识与验证码，创建用户（可选设置密码），记录审计，签发令牌对并保存刷新令牌白名单。
+     * 校验顺序：协议 → 标识格式 → 标识占用 → 密码策略 → 验证码 → 落库 → 签发令牌。
+     * 由于验证码校验成功即被删除（一次性凭证），密码策略等「可能因用户输入失败」的校验
+     * 必须排在验证码之前，否则用户改正密码后重试会得到「验证码不存在或已过期」。
      *
      * @param request    注册请求，包含：标识类型与值、验证码、可选密码、是否同意协议。
      * @param clientInfo 客户端信息（IP/UA），用于登录审计。
      * @return 认证响应，包含用户信息与令牌对。
-     * @throws BusinessException 当未同意协议、标识冲突、验证码失败、密码不合规时抛出。
+     * @throws BusinessException 当未同意协议、标识冲突、密码不合规、验证码失败时抛出。
      */
     public AuthResponse register(RegisterRequest request, ClientInfo clientInfo) {
         if (!request.agreeTerms()) {
@@ -107,6 +109,16 @@ public class AuthService {
         if (identifierExists(request.identifierType(), identifier)) {
             throw new BusinessException(ErrorCode.IDENTIFIER_EXISTS);
         }
+
+        // 先执行与验证码无关、且可能因用户输入而失败的校验（密码策略）。
+        // 验证码校验成功即从存储中删除（一次性凭证），若把它排在这些校验之前，
+        // 用户改正密码后重试会拿到「验证码不存在或已过期」。
+        String rawPassword = StringUtils.hasText(request.password()) ? request.password().trim() : null;
+        if (rawPassword != null) {
+            validatePassword(rawPassword);
+        }
+
+        // 一次性凭证的消费点：此后的步骤不得再抛出与用户输入相关的校验异常。
         ensureVerificationSuccess(verificationService.verify(VerificationScene.REGISTER, identifier, request.code()));
 
         User user = User.builder()
@@ -118,9 +130,9 @@ public class AuthService {
                 .tagsJson("[]")
                 .build();
 
-        if (StringUtils.hasText(request.password())) {
-            validatePassword(request.password());
-            user.setPasswordHash(passwordEncoder.encode(request.password().trim()));
+        if (rawPassword != null) {
+            // 哈希计算放在验证码校验之后：未通过校验的请求不应消耗 BCrypt 的 CPU。
+            user.setPasswordHash(passwordEncoder.encode(rawPassword));
         }
 
         userService.createUser(user);
