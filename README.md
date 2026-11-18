@@ -1,3 +1,52 @@
+# 项目文档
+## 要求
+
+- **JDK**: Java 21 (LTS)
+- **Maven**: 3.9.x 或更高（推荐使用仓库中的 Maven Wrapper）
+
+## 本地开发配置
+
+`application.yml` 里的数据库口令、API Key、OSS 密钥全部是 `${VAR:}` 占位，**仓库里不含任何真实凭据**，所以直接 `mvn spring-boot:run` 会连不上 MySQL/Redis。先补一份本地配置：
+
+```bash
+cp src/main/resources/application-local.yml.example src/main/resources/application-local.yml
+```
+
+填入自己的本地值后，用 `local` profile 启动：
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+`application-local.yml` 已在 `.gitignore` 中，不会被提交。
+
+需要填的变量：
+
+| 变量 | 说明 |
+|---|---|
+| `MYSQL_PASSWORD` | 本地 MySQL root 口令；库名默认 `zhiguang`，建表语句见 `db/schema.sql` |
+| `REDIS_PASSWORD` | 本地 Redis 口令，没设密码就留空 |
+| `DEEPSEEK_API_KEY` | AI 摘要用，留空则该功能报错，其余功能正常 |
+| `OPENAI_API_KEY` | RAG 向量检索用（阿里云百炼 DashScope），同上 |
+| `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` / `OSS_BUCKET` | 图片视频直传用，留空则发布带图知文会失败 |
+
+JWT 签名密钥（`src/main/resources/keys/`）同样不在仓库里，本地自行生成一对：
+
+```bash
+mkdir -p src/main/resources/keys && openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out src/main/resources/keys/private.pem && openssl rsa -pubout -in src/main/resources/keys/private.pem -out src/main/resources/keys/public.pem
+```
+
+嫌麻烦也可以直接用 Docker Compose 跑整套依赖，配置从 `.env` 读取，见仓库根目录的 `DOCKER_DEPLOY.md`。
+
+<div style="display: flex; gap: 10px;">
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/11a8438f.png" width="250" />
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/4035ca79.png" width="250" />
+  <img src="http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/40b80f25.png" width="250" />
+</div>
+
+![文档1](http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/43eb8fe1.png)
+![文档2](http://zhiguangapp.oss-cn-beijing.aliyuncs.com/posts/262804640385601536/images/20251226/42b24575.png)
+
 # 知光平台-知识获取与分享社区
 后端 & 前端开发（前端采用 AI 辅助开发）
 - **后端地址**：https://github.com/G-Pegasus/zhiguang_be

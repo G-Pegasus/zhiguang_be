@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:zhiguang}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:zhiguang123}
+    hikari:
+      # 2 核机器 + MySQL max-connections=60，默认 profile 的 20 条连接偏大
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: 2
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: ${REDIS_PASSWORD:zhiguang123}
+  kafka:
+    bootstrap-servers: kafka:9092
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username: ${ELASTICSEARCH_USERNAME:}
+    password: ${ELASTICSEARCH_PASSWORD:}
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
+      api-key: ${OPENAI_API_KEY:}
+
+canal:
+  enabled: ${CANAL_ENABLED:false}
+  host: ${CANAL_HOST:canal}
+  port: ${CANAL_PORT:11111}
+  destination: ${CANAL_DESTINATION:example}
+  username: ${CANAL_USERNAME:canal}
+  password: ${CANAL_PASSWORD:Canal@123456}
+
+auth:
+  jwt:
+    # 生产传 file:/run/secrets/private.pem（由 docker-compose.prod.yml 挂载）。
+    # 仓库里的 classpath 密钥已泄露，只能用于本地开发。
+    private-key: ${JWT_PRIVATE_KEY:classpath:keys/private.pem}
+    public-key: ${JWT_PUBLIC_KEY:classpath:keys/public.pem}
+
+oss:
+  endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
+  access-key-id: ${OSS_ACCESS_KEY_ID:}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+  bucket: ${OSS_BUCKET:}
+  public-domain: ${OSS_PUBLIC_DOMAIN:}
+  folder: ${OSS_FOLDER:avatars}

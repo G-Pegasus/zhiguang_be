@@ -68,14 +68,14 @@
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>9.2.1</version>
+            <version>8.18.1</version>
         </dependency>
 
         <!-- Elasticsearch 低层 REST 客户端（底层通信与兼容性组件） -->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
-            <version>9.2.1</version>
+            <version>8.18.1</version>
         </dependency>
 
         <!-- Spring Web：提供 MVC、REST Controller、RestTemplate 等 Web 能力 -->

@@ -1,0 +1,7 @@
+target/
+.git/
+.idea/
+.vscode/
+*.log
+backend.out.log
+backend.err.log
